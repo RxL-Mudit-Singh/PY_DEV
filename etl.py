@@ -109,6 +109,7 @@ def push_data(lst):
           |
           |
           """)
+    
     for data in lst:
         try:
             insert_creation = return_all_inserts(data)  # ? call return_all_inserts
