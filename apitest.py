@@ -7,8 +7,7 @@ from datetime import datetime
 
 def include_keys(dic, keys):
     key_set = set(keys) & set(dic.keys())
-    return {key: dic[key] for key in key_set}   
-
+    return {key: dic[key] for key in key_set}
 def pre_proc(data):
         print(type(data))
         for k,v in data.items():
@@ -17,30 +16,29 @@ def pre_proc(data):
                 # for k1,v1 in v.items():
                     data[k]=v['ArrayElem']
         return data
-        
-
 def flatten_list(d):
     try:
         key, lst = next((k, v) for k, v in d.items() if isinstance(v, list))
     except (StopIteration, AttributeError):
-        
         return [flatten(d,'.')]
     return [flatten({**d, **{key: v}},'.') for record in lst for v in flatten_list(record)]
 
-
 def generate_inserts(table, data):
     jsons = flatten_list(data)
-    # print(jsons)
     statements = []
+    ins = jsons[0]
+    ins = f"INSERT INTO {table} ({','.join(ins.keys())}) VALUES ({','.join(['%s']*len(ins.keys()))})"
+    val_array = []
     for i in jsons:
         cols = i.keys()
         values = i.values()
-        ins = f"INSERT INTO {table} ({','.join(cols)}) VALUES {tuple(values)}".replace('None','null')
-        statements.append((ins))
+        # ins = f"INSERT INTO {table} ({','.join(cols)}) VALUES ({','.join(['%s']*len(cols))})"
+        val_array.append(tuple(values))
+    statements.append(ins)
+    statements.append(val_array)
     return statements
 
-
-def return_all_inserts(dictionary):
+def return_all_inserts(dictionary)->dict:
     generic_keys = ['TENANT_ID','CASE_ID','VERSION_NUM']
     inserts = {}
     dictionary2 = pre_proc(dictionary)
@@ -51,7 +49,7 @@ def return_all_inserts(dictionary):
                 if isinstance(t1[j],dict):
                     if 'ArrayElem' in t1[j].keys():
                         t1[j] = t1[j]['ArrayElem']
-            inserts[i] = generate_inserts(i,t1)
+            inserts[i] = tuple(generate_inserts(i,t1))
     return inserts
 
 
