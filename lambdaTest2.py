@@ -4,7 +4,6 @@ import cx_Oracle as cx
 import tornado.web as tw
 import json
 # import requests
-import cx_Oracle as cx
 import pandas as pd
 from multiprocessing import Process,Pool
 from tornado.ioloop import IOLoop
@@ -86,7 +85,7 @@ def return_all_inserts(dictionary):
             inserts[i] = generate_inserts(i,t1)
     return inserts
 
-with open('jsons/sample.json','r',encoding='utf-8') as X:
+with open('jsons/msg1.json','r',encoding='utf-8') as X:
     start = dt()
     string = X.read()
     D = json.loads(string)
@@ -100,60 +99,44 @@ with open('jsons/sample.json','r',encoding='utf-8') as X:
     end = dt()
     # print(end-start)
 # cdns = cx.makedsn('10.100.22.99','1521',service_name='PVSDEVDB')
-cnxn_pool = cx.SessionPool('PVS_DB_55JULY','rxlogix','10.100.22.99:1521/PVSDEVDB',min=10,max=15,encoding='UTF-8')
-print(cnxn_pool)
-def post(lst):
-    print("Thread Started  ->",time.time())
-    print(lst)
-    print("""
-          |
-          |
-          |
-          """)
+# cnxn_pool = cx.SessionPool('PVS_DB_55JULY','rxlogix','10.100.22.99:1521/PVSDEVDB',min=10,max=15,encoding='UTF-8')
+# print(cnxn_pool)
+# def post(lst):
+#     print("Thread Started  ->",time.time())
+#     print(lst)
+#     print("""
+#           |
+#           |
+#           |
+#           """)
     
-    for data in lst:
-        try:
-            cnxn = cnxn_pool.acquire()
-            cursor = cnxn.cursor()
-            cursor.execute(f"insert into TEST_DATA2(ID,FIRST_NAME,EMAIL,GENDER,ADDRESS) values({data['id']},  '{data['first_name']}',  '{data['email']}',  '{data['gender']}','{data['address']}')")
-            cnxn.commit()
-            cnxn_pool.release(cnxn)
-            # print("completed")
-        except Exception as e:
-            cnxn.roll_back()
-            print(e)
-            cnxn_pool.release(cnxn)
-    print("data chunk inserted")
+#     for data in lst:
+#         try:
+#             cnxn = cnxn_pool.acquire()
+#             cursor = cnxn.cursor()
+#             cursor.execute(f"insert into TEST_DATA2(ID,FIRST_NAME,EMAIL,GENDER,ADDRESS) values({data['id']},  '{data['first_name']}',  '{data['email']}',  '{data['gender']}','{data['address']}')")
+#             cnxn.commit()
+#             cnxn_pool.release(cnxn)
+#             # print("completed")
+#         except Exception as e:
+#             cnxn.roll_back()
+#             print(e)
+#             cnxn_pool.release(cnxn)
+#     print("data chunk inserted")
         
       
            
     
-def split_file(a,n):
-    k,m = divmod(len(a),n)
-    return list((a[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n)))
+# def split_file(a,n):
+#     k,m = divmod(len(a),n)
+#     return list((a[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n)))
 
-def load(file)->list:
-    with open(file,'r', encoding="utf8") as fp:
-        string = fp.read()
-        o = json.loads(string)
-        line_chunk = split_file(o,100)
-        return line_chunk
-
-
-if __name__ == "__main__":
-    st = time.time()
-    arr = recieve_message("https://sqs.ap-south-1.amazonaws.com/884379823401/testQueue")
-    s3 = bt.client('s3')
-    s3.download_file(Bucket=arr[0],Key=arr[1],Filename='C:/DEV/PY_DEV/output.json')
-    chunk_data = load('output.json')
-    with ThreadPoolExecutor(max_workers=8) as threads:
-        threads.map(post,chunk_data)
-    cnxn_pool.close()
-    et = time.time()
-    print(et-st)
-           
-            
-
+# def load(file)->list:
+#     with open(file,'r', encoding="utf8") as fp:
+#         string = fp.read()
+#         o = json.loads(string)
+#         line_chunk = split_file(o,100)
+#         return line_chunk
 
 
 # if __name__ == "__main__":
@@ -162,9 +145,25 @@ if __name__ == "__main__":
 #     s3 = bt.client('s3')
 #     s3.download_file(Bucket=arr[0],Key=arr[1],Filename='C:/DEV/PY_DEV/output.json')
 #     chunk_data = load('output.json')
-#     pool = Pool()
-#     pool.map(post,chunk_data)
+#     with ThreadPoolExecutor(max_workers=8) as threads:
+#         threads.map(post,chunk_data)
 #     cnxn_pool.close()
 #     et = time.time()
 #     print(et-st)
+           
+            
+
+
+
+# # if __name__ == "__main__":
+# #     st = time.time()
+# #     arr = recieve_message("https://sqs.ap-south-1.amazonaws.com/884379823401/testQueue")
+# #     s3 = bt.client('s3')
+# #     s3.download_file(Bucket=arr[0],Key=arr[1],Filename='C:/DEV/PY_DEV/output.json')
+# #     chunk_data = load('output.json')
+# #     pool = Pool()
+# #     pool.map(post,chunk_data)
+# #     cnxn_pool.close()
+# #     et = time.time()
+# #     print(et-st)
            
